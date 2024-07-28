@@ -1,34 +1,32 @@
 import socket
 import json
 import time
-import datetime
+import random
 
-HOST = '192.168.56.1'
-PORT = 5000
+SERVER_HOST = '192.168.0.162'  
+SERVER_PORT = 12345     
+
+def generate_vibration_data():
+    return [random.uniform(-1.0, 1.0) for _ in range(3)]
 
 def send_vibration_data():
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect((HOST, PORT))
-
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect((SERVER_HOST, SERVER_PORT))
+    
     try:
-        for _ in range(5):  # Send 5 batches of data
-            timestamp = datetime.datetime.now().isoformat()
-            device_id = 'device_1'
-            vibration_data = [0.1, 0.2, 0.3, 0.4, 0.5]  # Example vibration data
-
-            data = {
-                'timestamp': timestamp,
-                'device_id': device_id,
-                'vibration_data': vibration_data
+        while True:
+            # Create a data packet
+            data_packet = {
+                'timestamp': time.time(),
+                'device_id': 'ESP32_01',
+                'vibration_data': generate_vibration_data()
             }
-
-            json_data = json.dumps(data)
-            client_socket.sendall(json_data.encode('utf-8'))
-
-            time.sleep(1)  # Wait 1 second before sending the next batch
-
+            
+            client.sendall(json.dumps(data_packet).encode('utf-8'))
+            
+            time.sleep(1)  
     finally:
-        client_socket.close()
+        client.close()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     send_vibration_data()
