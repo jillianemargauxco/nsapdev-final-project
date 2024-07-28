@@ -7,8 +7,8 @@ import matplotlib.backends.backend_agg as agg
 import matplotlib.backends.backend_svg as svg
 
 # Configuration
-HOST = '192.168.0.162'
-PORT = 5001
+HOST = '192.168.56.1'
+PORT = 5000
 BUFFER_SIZE = 1024  # Size of each data packet received
 
 # File for saving data
