@@ -18,7 +18,7 @@ def send_vibration_data():
             # Create a data packet
             data_packet = {
                 'timestamp': time.time(),
-                'device_id': 'ESP32_01',
+                'device_id': 'ESP32_02',
                 'vibration_data': generate_vibration_data()
             }
             

@@ -2,23 +2,29 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_ADXL345_U.h>
 #include <ArduinoJson.h>
+#include <NTPClient.h>
+#include <WiFiUdp.h>
 
 // Replace with your network credentials
-const char* ssid = "Chowder Main Tenda";
-const char* password = "Chewy1212!";
+const char* ssid = "linksys";
 
 // Server details
-const char* server_host = "192.168.0.162";  // Replace with your server's IP
-const uint16_t server_port = 12345;
+const char* server_host = "192.168.1.103";  // Replace with your server's IP
+const uint16_t server_port = 8001;
 
 // Define the LED pin
 const int ledPin = 15;
 
 // Define vibration threshold in g-force
-const float vibrationThreshold = 2.0; // Adjust the threshold as needed
+const float vibrationThreshold = 20.0; // Adjust the threshold as needed
 
 // Create an ADXL345 object
 Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
+
+// NTP client setup
+const long utcOffsetInSeconds = 0; // UTC offset in seconds (0 for UTC)
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds, 60000); // Update every 60 seconds
 
 void setup() {
   Serial.begin(115200);
@@ -35,13 +41,16 @@ void setup() {
   accel.setRange(ADXL345_RANGE_16_G); // Set the range to +/- 16G
 
   // Connect to WiFi
-  WiFi.begin(ssid, password);
+  WiFi.begin(ssid);
   Serial.print("Connecting to WiFi");
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
   Serial.println("Connected to WiFi");
+
+  // Initialize NTP Client
+  timeClient.begin();
 }
 
 void loop() {
@@ -55,7 +64,7 @@ void loop() {
   // Check if the vibration magnitude exceeds the threshold
   if (vibrationMagnitude > vibrationThreshold) {
     Serial.println("Vibration threshold exceeded!");
-
+  
     // Turn on the LED
     digitalWrite(ledPin, HIGH);
 
@@ -66,9 +75,13 @@ void loop() {
     digitalWrite(ledPin, LOW);
   }
 
+  // Update NTP client to get the current time
+  timeClient.update();
+  String timestamp = timeClient.getFormattedTime(); // Get time in "HH:MM:SS" format
+
   // Create a JSON object for the vibration data
   StaticJsonDocument<200> jsonDoc;
-  jsonDoc["timestamp"] = millis();
+  jsonDoc["timestamp"] = timestamp;
   jsonDoc["device_id"] = "ESP32_ADXL345";
   JsonArray vibrationData = jsonDoc.createNestedArray("vibration_data");
   vibrationData.add(event.acceleration.x);
@@ -102,8 +115,14 @@ bool sendDataToServer(const String& jsonData) {
   // Send the JSON data
   client.println(jsonData);
 
-  // Wait for server response (optional)
+  // Wait for server response with a timeout
+  unsigned long startTime = millis();
   while (client.available() == 0) {
+    if (millis() - startTime > 5000) { // 5 seconds timeout
+      Serial.println("Server response timeout");
+      client.stop();
+      return false;
+    }
     delay(10);
   }
 
