@@ -16,7 +16,7 @@ const uint16_t server_port = 8001;
 const int ledPin = 15;
 
 // Define vibration threshold in g-force
-const float vibrationThreshold = 2.0; // Adjust the threshold as needed
+const float vibrationThreshold = 20.0; // Adjust the threshold as needed
 
 // Create an ADXL345 object
 Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
