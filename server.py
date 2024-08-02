@@ -1,10 +1,11 @@
 import asyncio
 import json
 import csv
+import time
 import matplotlib.pyplot as plt
 from asyncio import Queue
 
-HOST = '192.168.1.103'
+HOST = '10.2.201.193'
 PORT = 8001
 
 DATA_FILE = 'vibration_data.csv'
