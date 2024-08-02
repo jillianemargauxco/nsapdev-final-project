@@ -1,11 +1,10 @@
 import asyncio
 import json
 import csv
-import time
 import matplotlib.pyplot as plt
 from asyncio import Queue
 
-HOST = '10.2.201.193'
+HOST = '192.168.1.101'
 PORT = 8001
 
 DATA_FILE = 'vibration_data.csv'
@@ -15,7 +14,6 @@ client_data = {}
 colors = plt.cm.get_cmap('tab10', 10)  # Color map with 10 colors
 
 def visualize_data(timestamp, device_id, vibration_values):
-    
     print(f"Timestamp: {timestamp}, Device ID: {device_id}")
     print("Vibration Data:")
     print(" | ".join(f"{value:.2f}" for value in vibration_values))
@@ -85,7 +83,6 @@ async def update_plot():
     
     while True:
         try:
-
             device_id, timestamp, vibration_values = await data_queue.get()
             if device_id not in client_data:
                 client_data[device_id] = {'timestamps': [], 'vibration_x': [], 'vibration_y': [], 'vibration_z': []}
@@ -125,6 +122,8 @@ async def update_plot():
             plt.pause(0.1)  # Pause to update the plot
         except asyncio.CancelledError:
             break
+        except Exception as e:
+            print(f"Error in update_plot: {e}")
 
 async def start_server():
     server = await asyncio.start_server(handle_client_connection, HOST, PORT)
@@ -139,10 +138,24 @@ async def start_server():
     except KeyboardInterrupt:
         print("Server shutting down.")
     finally:
+        # Close the server
+        server.close()
+        await server.wait_closed()
+
+        # Cancel the plot update task
+        plot_task.cancel()
+        try:
+            await plot_task
+        except asyncio.CancelledError:
+            print("Plot update task cancelled.")
+
+        # Turn off interactive mode and show the final plot
         plt.ioff()  # Interactive mode off
         plt.show()
-        plot_task.cancel()
-        await plot_task
 
 if __name__ == "__main__":
-    asyncio.run(start_server())
+    try:
+        asyncio.run(start_server())
+    except KeyboardInterrupt:
+        print("Program interrupted. Exiting...")
+

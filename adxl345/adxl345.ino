@@ -9,14 +9,14 @@
 const char* ssid = "linksys";
 
 // Server details
-const char* server_host = "192.168.1.103";  // Replace with your server's IP
+const char* server_host = "192.168.1.101";  // Replace with your server's IP
 const uint16_t server_port = 8001;
 
 // Define the LED pin
 const int ledPin = 15;
 
 // Define vibration threshold in g-force
-const float vibrationThreshold = 20.0; // Adjust the threshold as needed
+const float vibrationThreshold = 2.0; // Adjust the threshold as needed
 
 // Create an ADXL345 object
 Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
