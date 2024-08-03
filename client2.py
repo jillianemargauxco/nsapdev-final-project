@@ -3,7 +3,7 @@ import json
 import time
 import random
 
-SERVER_HOST = '192.168.1.103'  
+SERVER_HOST = '192.168.0.162' 
 SERVER_PORT = 8001     
 
 def generate_vibration_data():
