@@ -2,29 +2,32 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_ADXL345_U.h>
 #include <ArduinoJson.h>
-#include <NTPClient.h>
 #include <WiFiUdp.h>
+#include <NTPClient.h>
 
 // Replace with your network credentials
-const char* ssid = "linksys";
+const char* ssid = "Home Network_Guest";
 
 // Server details
-const char* server_host = "192.168.1.101";  // Replace with your server's IP
+const char* server_host = "192.168.68.114";  // Replace with your server's IP
 const uint16_t server_port = 8001;
 
 // Define the LED pin
 const int ledPin = 15;
 
 // Define vibration threshold in g-force
-const float vibrationThreshold = 20.0; // Adjust the threshold as needed
+const float vibrationThreshold = 15.0; // Adjust the threshold as needed
 
 // Create an ADXL345 object
 Adafruit_ADXL345_Unified accel = Adafruit_ADXL345_Unified(12345);
 
-// NTP client setup
-const long utcOffsetInSeconds = 0; // UTC offset in seconds (0 for UTC)
-WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "pool.ntp.org", utcOffsetInSeconds, 60000); // Update every 60 seconds
+// NTP configuration
+const char* ntpServer = "pool.ntp.org";
+const long gmtOffset_sec = 3600;  // GMT offset in seconds (e.g., 3600 for +1 hour)
+const int daylightOffset_sec = 0; // Daylight offset in seconds
+
+WiFiUDP udp;
+NTPClient timeClient(udp, ntpServer, gmtOffset_sec, 60000); // Update every 60 seconds
 
 void setup() {
   Serial.begin(115200);
@@ -54,6 +57,10 @@ void setup() {
 }
 
 void loop() {
+  // Update time
+  timeClient.update();
+  unsigned long epochTime = timeClient.getEpochTime();
+
   // Get sensor event
   sensors_event_t event;
   accel.getEvent(&event);
@@ -75,13 +82,9 @@ void loop() {
     digitalWrite(ledPin, LOW);
   }
 
-  // Update NTP client to get the current time
-  timeClient.update();
-  String timestamp = timeClient.getFormattedTime(); // Get time in "HH:MM:SS" format
-
   // Create a JSON object for the vibration data
   StaticJsonDocument<200> jsonDoc;
-  jsonDoc["timestamp"] = timestamp;
+  jsonDoc["timestamp"] = epochTime;  // Use epoch time
   jsonDoc["device_id"] = "ESP32_ADXL345";
   JsonArray vibrationData = jsonDoc.createNestedArray("vibration_data");
   vibrationData.add(event.acceleration.x);

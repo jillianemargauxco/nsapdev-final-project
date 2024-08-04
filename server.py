@@ -3,8 +3,9 @@ import json
 import csv
 import matplotlib.pyplot as plt
 from asyncio import Queue
+import time
 
-HOST = '192.168.0.162'
+HOST = '192.168.68.114'
 PORT = 8001
 
 DATA_FILE = 'vibration_data.csv'
@@ -35,6 +36,9 @@ async def handle_client_connection(reader, writer):
                         timestamp = vibration_data['timestamp']
                         device_id = vibration_data['device_id']
                         vibration_values = vibration_data['vibration_data']
+
+                        # Use current epoch time
+                        timestamp = int(time.time())
                         
                         # Initialize client data if not already present
                         if device_id not in client_data:
