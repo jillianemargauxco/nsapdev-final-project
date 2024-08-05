@@ -1,5 +1,16 @@
 # Vibration Monitoring System
 
+## NSAPDEV Team Members
+- Aperin, Johanna
+- Cada, Louis
+- Elloso, Jilliane (Author/Owner)
+
+## NSEMBED Team Members
+- Aperin, Johanna
+- Cada, Louis
+- Elloso, Jilliane (Author/Owner)
+- Tan, Jiliana
+  
 ## Overview
 
 This project demonstrates a vibration monitoring system using an ESP32 microcontroller and an ADXL345 accelerometer sensor. The system collects and transmits vibration data to a server, which processes and visualizes the data in real time. The project includes client and server applications, data visualization, and performance tests.
